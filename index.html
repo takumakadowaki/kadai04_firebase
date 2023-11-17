@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+
+
+
+
+<body>
+
+    <h1>チャットアプリ</h1>
+    <!-- コンテンツ表示画面 -->
+    <div>
+        <!-- 各場所にidを設定しましょう -->
+        <div>
+            <input id="uname"   type="text" placeholder="名前を入力してください">
+        </div>
+        <div>
+            <textarea id="text" placeholder="文章を入力してください"></textarea>
+        </div>
+        <button id="send">送信</button>
+        <!-- style.cssに "overflow: auto;"を書いてみましょう！※最後に -->
+        <div id="output"></div>
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="module">
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+            from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+    // 自分のユーザー名を設定
+    const currentUserName = "自分のユーザー名"; 
+
+const firebaseConfig = {
+
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); //RealtimeDBに接続
+        const dbRef = ref(db, "chat"); //RealtimeDB内の"chat"を使う
+
+        //データ登録(Click)
+        $('#send').on('click', function () {
+            const uname = $('#uname').val();
+            const text = $('#text').val();
+
+            console.log(uname, 'unameの文字')
+            console.log(text, 'textの文字')
+const msg={
+    uname:uname,
+    text:text,
+}
+
+// firebaseに送る処理
+const newPostRef =push(dbRef);
+// setはFBが用意したおまじない
+set(newPostRef, msg);
+
+        $('#uname').val("")
+        $('#text').val("");
+
+            // この下は消さない
+        })
+
+
+
+
+
+        //データ登録(Enter)
+
+        //最初にデータ取得＆onSnapshotでリアルタイムにデータを取得
+        // onChildAdded(dbRef,function(data){
+        //     const msg = data.val();
+        //     console.log(msg,'katamari')
+        //     const key = data.key;
+        //     console.log(key,'kagi')
+            
+        //     let html = `
+        //         <div class=${key}>
+        //             <p>${msg.uname}</p>
+        //             <p>${msg.text}</p>
+        //         </div>  
+        //     `
+
+        //     // 画面に表示するために埋め込みます
+        //     $('#output').append(html)
+        // })
+// データ取得＆表示
+onChildAdded(dbRef, function(data) {
+        const msg = data.val();
+        const isOwnMessage = msg.uname === currentUserName;
+        const messageClass = isOwnMessage ? 'message-own' : 'message-other';
+
+        let html = `
+            <div class="${messageClass}">
+                <p><strong>${msg.uname}</strong></p>
+                <p>${msg.text}</p>
+            </div>
+        `;
+
+        $('#output').append(html);
+    });
+    </script>
+</body>
+
+</html>
